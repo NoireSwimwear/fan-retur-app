@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Return {
+  id           Int    @id @default(autoincrement())
+  orderNumber  String
+  customerName String
+  phone        String
+  email        String
+
+  county       String
+  city         String
+  street       String
+  streetNumber String
+  zipCode      String
+
+  parcels   Int
+  envelopes Int
+  weight    Float
+
+  pickupDate String
+  pickupFrom String
+  pickupTo   String
+
+  observations String?
+  awb          String?
+  status       String  @default("pending")
+  fanResponse  Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
