@@ -3,8 +3,23 @@ import { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { createFanAwb } from "@/lib/fan";
 
+function corsHeaders() {
+  return {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+  };
+}
+
 function toJsonValue(value: unknown): Prisma.InputJsonValue {
   return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
+}
+
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: corsHeaders(),
+  });
 }
 
 export async function POST(request: NextRequest) {
@@ -65,12 +80,18 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      return NextResponse.json({
-        ok: true,
-        id: updatedReturn.id,
-        awb: updatedReturn.awb,
-        message: "Programarea ridicării a fost efectuată.",
-      });
+      return NextResponse.json(
+        {
+          ok: true,
+          id: updatedReturn.id,
+          awb: updatedReturn.awb,
+          message: "Programarea ridicării a fost efectuată.",
+        },
+        {
+          status: 200,
+          headers: corsHeaders(),
+        },
+      );
     } catch (fanError) {
       const fanMessage =
         fanError instanceof Error ? fanError.message : "Eroare la FAN Courier.";
@@ -91,7 +112,10 @@ export async function POST(request: NextRequest) {
           id: savedReturn.id,
           error: fanMessage,
         },
-        { status: 400 },
+        {
+          status: 400,
+          headers: corsHeaders(),
+        },
       );
     }
   } catch (error) {
@@ -102,7 +126,10 @@ export async function POST(request: NextRequest) {
         ok: false,
         error: "Nu am putut procesa cererea de retur.",
       },
-      { status: 500 },
+      {
+        status: 500,
+        headers: corsHeaders(),
+      },
     );
   }
 }
