@@ -138,13 +138,42 @@ function getClientId(): number {
 function extractAwb(data: FanJson | null): string | null {
   if (!data) return null;
 
-  if (typeof data.awb === "string") return data.awb;
-  if (typeof data.number === "string") return data.number;
+  const directKeys = [
+    "awb",
+    "Awb",
+    "awbNumber",
+    "AwbNumber",
+    "number",
+    "Number",
+  ];
+
+  for (const key of directKeys) {
+    const value = data[key];
+    if (typeof value === "string" && value.trim()) return value.trim();
+    if (typeof value === "number") return String(value);
+  }
 
   if (typeof data.data === "object" && data.data !== null) {
     const nested = data.data as Record<string, unknown>;
-    if (typeof nested.awb === "string") return nested.awb;
-    if (typeof nested.number === "string") return nested.number;
+
+    for (const key of directKeys) {
+      const value = nested[key];
+      if (typeof value === "string" && value.trim()) return value.trim();
+      if (typeof value === "number") return String(value);
+    }
+  }
+
+  if (Array.isArray(data.data) && data.data.length > 0) {
+    const first = data.data[0];
+    if (typeof first === "object" && first !== null) {
+      const nested = first as Record<string, unknown>;
+
+      for (const key of directKeys) {
+        const value = nested[key];
+        if (typeof value === "string" && value.trim()) return value.trim();
+        if (typeof value === "number") return String(value);
+      }
+    }
   }
 
   return null;
@@ -221,7 +250,16 @@ export async function createFanAwb(input: FanCreateInput) {
   };
 
   const awbResponse = await fanPost("/intern-awb", token, awbPayload);
+  console.log("FAN intern-awb response:", JSON.stringify(awbResponse, null, 2));
+
   const awb = extractAwb(awbResponse);
+  console.log("Extracted AWB:", awb);
+
+  if (!awb) {
+    throw new Error(
+      `FAN nu a returnat AWB valid. Răspuns intern-awb: ${JSON.stringify(awbResponse)}`,
+    );
+  }
 
   const orderPayload: Record<string, unknown> = {
     clientId,
@@ -261,6 +299,7 @@ export async function createFanAwb(input: FanCreateInput) {
   };
 
   const orderResponse = await fanPost("/order", token, orderPayload);
+  console.log("FAN order response:", JSON.stringify(orderResponse, null, 2));
 
   return {
     awb,
