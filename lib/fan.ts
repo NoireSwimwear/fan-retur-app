@@ -176,14 +176,25 @@ function extractAwb(data: FanJson | null): string | null {
     }
   }
 
+  if (Array.isArray(data.response) && data.response.length > 0) {
+    const first = data.response[0];
+    if (typeof first === "object" && first !== null) {
+      const nested = first as Record<string, unknown>;
+
+      for (const key of directKeys) {
+        const value = nested[key];
+        if (typeof value === "string" && value.trim()) return value.trim();
+        if (typeof value === "number") return String(value);
+      }
+    }
+  }
+
   return null;
 }
 
 export async function createFanAwb(input: FanCreateInput) {
   const token = await fanLogin();
   const clientId = getClientId();
-
-  const paymentName = getEnv("FAN_PAYMENT");
 
   const recipientName = getEnv("RETURN_RECIPIENT_NAME");
   const recipientPhone = getEnv("RETURN_RECIPIENT_PHONE");
@@ -205,7 +216,7 @@ export async function createFanAwb(input: FanCreateInput) {
             envelopes: input.envelopes,
           },
           weight: input.weight,
-          payment: paymentName,
+          payment: "receiver",
           cod: 0,
           declaredValue: 0,
           observation: input.observations || "",
