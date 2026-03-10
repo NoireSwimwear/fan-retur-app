@@ -216,7 +216,7 @@ export async function createFanAwb(input: FanCreateInput) {
             envelopes: input.envelopes,
           },
           weight: input.weight,
-          payment: "receiver",
+          payment: "recipient",
           cod: 0,
           declaredValue: 0,
           observation: input.observations || "",
@@ -228,7 +228,7 @@ export async function createFanAwb(input: FanCreateInput) {
             width: 10,
             height: 10,
           },
-          options: ["F"],
+          options: [],
         },
         sender: {
           name: input.customerName,
