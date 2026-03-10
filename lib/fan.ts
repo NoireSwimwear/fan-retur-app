@@ -154,6 +154,8 @@ export async function createFanAwb(input: FanCreateInput) {
   const token = await fanLogin();
   const clientId = getClientId();
 
+  const paymentName = getEnv("FAN_PAYMENT");
+
   const recipientName = getEnv("RETURN_RECIPIENT_NAME");
   const recipientPhone = getEnv("RETURN_RECIPIENT_PHONE");
   const recipientEmail = getEnv("RETURN_RECIPIENT_EMAIL");
@@ -174,7 +176,7 @@ export async function createFanAwb(input: FanCreateInput) {
             envelopes: input.envelopes,
           },
           weight: input.weight,
-          payment: "sender",
+          payment: paymentName,
           cod: 0,
           declaredValue: 0,
           observation: input.observations || "",
